@@ -9,12 +9,24 @@
  * Define the database file
 */
 const char *const USERS_FILE = "users.csv";
-const char *const POSTS_FILE = "posts.csv";
-const char *const COMMENTS_FILE = "comments.csv";
+const char *const QUESTION_FILE = "questions.csv";
+const char *const ANSWER_FILE = "answer.csv";
 const int USER_ID = 1;
 const int USER_NAME_COLUMN = 2;
 const int USER_PASSWORD_COLUMN = 3;
 const int USER_BIRTHDATE_COLUMN = 4;
+const int QUESTION_ID = 1;
+const int QUESTION_TITLE= 2;
+const int QUESTION_DESCRIPTION = 2;
+const int QUESTION_DATE = 3;
+const int QUESTION_USERNAME = 4;
+const int QUESTION_USER_ID = 5;
+const int ANSER_ID = 1;
+const int ANSER_USERNAME = 2;
+const int ANSER_ANSWER = 3;
+const int ANSER_DATE = 4;
+const int ANSER_QUESTION_ID = 5;
+
 #define MAX_LINE_LENGTH 1024
 
 
@@ -27,14 +39,15 @@ typedef struct
     int id;
     char username[50];
     char password[50];
-    char birth_date[50]
+    char birth_date[50];
 } Account;
 
 typedef struct {
     int id;
     char title[1000];
     char description[5000];
-    char date[50]
+    char date[50];
+    char username[50];
     int user_id;
 } Question;
 
@@ -42,7 +55,7 @@ typedef struct {
     int id;
     char username[50];
     char answer[5000];
-    char date[50]
+    char date[50];
     int question_id;
 } Answer;
 
@@ -218,7 +231,7 @@ void login_screen() {
         // check the password is valid or not
         char* db_password = get_value_by_column(is_user, 3);
         if (strcmp(db_password, password) == 0) {
-            // TODO: Redirect to the home screen
+            home_screen();
         } else {
             printf("Password is incorrect. Please wait 2 seconds.\n");
             sleep(2); 
@@ -356,7 +369,17 @@ void forum_screen() {
  * @name: Write a problem Screen
 */
 void write_problem_screen() {
-    printf("Forum!");
+    printf("Write down you problem on Forum!");
+
+    char title[500];
+
+    printf("Enter question title: ");
+    clear_input_buffer();
+    fgets(title, sizeof(title), stdin);
+    strtok(title, "\n");
+
+    printf("%s", title);
+    
 }
 
 
