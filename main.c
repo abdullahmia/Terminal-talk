@@ -1,9 +1,11 @@
 #include<stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
+#include <ctype.h>
+
 
 /**
  * Define the database file
@@ -17,17 +19,18 @@ const int USER_PASSWORD_COLUMN = 3;
 const int USER_BIRTHDATE_COLUMN = 4;
 const int QUESTION_ID = 1;
 const int QUESTION_TITLE= 2;
-const int QUESTION_DESCRIPTION = 2;
-const int QUESTION_DATE = 3;
-const int QUESTION_USERNAME = 4;
-const int QUESTION_USER_ID = 5;
+const int QUESTION_DESCRIPTION = 3;
+const int QUESTION_DATE = 4;
+const int QUESTION_USERNAME = 5;
+const int QUESTION_USER_ID = 6;
 const int ANSER_ID = 1;
 const int ANSER_USERNAME = 2;
 const int ANSER_ANSWER = 3;
 const int ANSER_DATE = 4;
 const int ANSER_QUESTION_ID = 5;
 
-#define MAX_LINE_LENGTH 1024
+#define MAX_LINE_LENGTH 5500
+
 
 
 /**
@@ -56,8 +59,15 @@ typedef struct {
     char username[50];
     char answer[5000];
     char date[50];
-    int question_id;
+    char question_id[50];
 } Answer;
+
+typedef struct {
+    int id;
+    char username[100];
+} Looged_User;
+
+Looged_User logged_in_user;
 
 /**
  * <-- ORM UTILITY FUNCTIONS -->
@@ -71,6 +81,30 @@ bool create(const char *filename, const void *data, size_t data_size) {
     } else {
         return false;
     }
+}
+
+void get_answers(const char *file_path, const char *question_id) {
+    FILE *file = fopen(file_path, "r");
+    if (file == NULL) {
+        perror("Error opening file");
+        return;
+    }
+
+    char line[MAX_LINE_LENGTH];
+    Answer answer;
+    // Print table headers
+    printf("%-5s | %-60s | %-20s | %-20s | %-10s\n", "ID", "Answer", "Date", "Username", "Question ID");
+    printf("----------------------------------------------------------------------------------------------------------------------------------------\n");
+
+    while (fgets(line, sizeof(line), file)) {
+        sscanf(line, "%d,%[^,],%[^,],%[^,],%[^\n]", &answer.id, answer.username, answer.answer, answer.date, answer.question_id);
+        if (strcmp(answer.question_id, question_id) == 0) {
+            // Print each row in a formatted manner
+            printf("%-5d | %-60s | %-20s | %-20s | %-10s\n", answer.id, answer.username, answer.answer, answer.date, answer.question_id);
+        }
+    }
+
+    fclose(file);
 }
 
 char* get_data_by_value(const char* file_path, const char* value) {
@@ -118,6 +152,62 @@ char* get_value_by_column(const char* row_data, int column) {
     return value;
 }
 
+void print_questions() {
+    FILE *file = fopen(QUESTION_FILE, "r");
+    if (file == NULL) {
+        printf("Error opening file.\n");
+        return;
+    }
+
+    int maxColumnWidth[6] = {5, 30, 30, 20, 15, 10};
+
+    char line[MAX_LINE_LENGTH];
+
+    while (fgets(line, sizeof(line), file) != NULL) {
+        char tempLine[MAX_LINE_LENGTH];
+        strcpy(tempLine, line);
+
+        char *token = strtok(tempLine, ",");
+        int columnCount = 0;
+        while (token != NULL && columnCount < 6) {
+            int tokenLength = strlen(token);
+            if (tokenLength > maxColumnWidth[columnCount]) {
+                maxColumnWidth[columnCount] = tokenLength;
+            }
+            token = strtok(NULL, ",");
+            columnCount++;
+        }
+    }
+
+    fclose(file);
+    file = fopen(QUESTION_FILE, "r");
+
+    printf("%-*s ", maxColumnWidth[0], "ID");
+    printf("%-*s ", maxColumnWidth[1], "TITLE");
+    printf("%-*s ", maxColumnWidth[2], "DESCRIPTION");
+    printf("%-*s ", maxColumnWidth[3], "DATE");
+    printf("%-*s ", maxColumnWidth[4], "USERNAME");
+    printf("%-*s\n", maxColumnWidth[5], "USER ID");
+
+    printf("----------------------------------------------------------------------------------------------------------------------------------------\n");
+
+    while (fgets(line, sizeof(line), file) != NULL) {
+        char tempLine[MAX_LINE_LENGTH];
+        strcpy(tempLine, line);
+
+        char *token = strtok(tempLine, ",");
+        int columnCount = 0;
+        while (token != NULL && columnCount < 6) {
+            printf("%-*s ", maxColumnWidth[columnCount], token);
+            token = strtok(NULL, ",");
+            columnCount++;
+        }
+        printf("\n");
+    }
+
+    fclose(file);
+}
+
 
 int count_rows(const char* file_path) {
     FILE* file = fopen(file_path, "r");
@@ -135,6 +225,28 @@ int count_rows(const char* file_path) {
 
     fclose(file);
     return count;
+}
+
+
+/**
+ * <-- UTILITY DATE & TIME FUNCTIONS -->
+*/
+char* getCurrentDate() {
+    static char dateString[11]; // "YYYY-MM-DD\0"
+    
+    time_t currentTime;
+    struct tm *localTime;
+    
+    // Get the current time
+    currentTime = time(NULL);
+    
+    // Convert the current time to the local time
+    localTime = localtime(&currentTime);
+    
+    // Format the date string
+    sprintf(dateString, "%04d-%02d-%02d", localTime->tm_year + 1900, localTime->tm_mon + 1, localTime->tm_mday);
+
+    return dateString;
 }
 
 
@@ -226,15 +338,19 @@ void login_screen() {
     // Check the user user is exist of not
     const char* search_valu = "abdullah";
     char* is_user = get_data_by_value(USERS_FILE, username);
-    printf("Found value: %s\n", is_user);
     if (is_user != NULL) {
         // check the password is valid or not
         char* db_password = get_value_by_column(is_user, 3);
         if (strcmp(db_password, password) == 0) {
+            char* get_user_id = get_value_by_column(is_user, 1);
+            int user_id = atoi(get_user_id);
+            char* get_username = get_value_by_column(is_user, 2);
+            logged_in_user.id = user_id;
+            strcpy(logged_in_user.username, get_username);
             home_screen();
         } else {
             printf("Password is incorrect. Please wait 2 seconds.\n");
-            sleep(2); 
+            sleep(2);
             login_screen();
         }
     } else {
@@ -325,11 +441,11 @@ void forgot_password_screen() {
  * @name: Home Screen
 */
 void home_screen() {
+
     int choice;
 
     do {
         clear_screen();
-
         printf("Welcome to the Forum App!\n");
         printf("----------------------------\n");
         printf("1. Go to Fourm\n");
@@ -362,25 +478,192 @@ void home_screen() {
  * @name: Forum Screen
 */
 void forum_screen() {
-    printf("Forum!");
+    clear_screen();
+    printf("Forum! \n");
+    print_questions();
+    char choice;
+    do {
+        printf("Enter 'h' to go home or enter question ID to view it (e.g., 1): ");
+        if (scanf(" %c", &choice) != 1) {
+            printf("Invalid input. Please try again.\n");
+            while (getchar() != '\n'); // Clear input buffer
+            continue;
+        }
+        
+        if (choice == 'h') {
+            home_screen();
+        } else if (choice >= '0' && choice <= '9') {
+            int question_id = choice - '0';
+            view_question(question_id);
+            break;
+        } else {
+            printf("Invalid input. Please try again.\n");
+        }
+    } while (1);
+
+}
+
+
+
+
+/**
+ * @name: View Question Screen
+*/
+void view_question(int id) {
+    clear_screen();
+    char id_str[200];
+    snprintf(id_str, sizeof(id_str), "%d", id); 
+    char* question = get_data_by_value(QUESTION_FILE, id_str);
+    
+
+    // generate a question id like `question-3`
+    char formatted_question_id[20];
+    sprintf(formatted_question_id, "question-%d", id);
+
+
+
+    if (question != NULL) {
+        char* title = get_value_by_column(question, 2);
+        char* description = get_value_by_column(question, 3);
+        char* date = get_value_by_column(question, 4);
+        char* username = get_value_by_column(question, 5);
+
+        printf("QUESTION: %s\n", title);
+        printf("DESCRIPTION: %s\n", description);
+        printf("AUTHOR: %s\n", username);
+        printf("PUBLISH DATE: %s\n", date);
+
+        printf("\nANSWERS:\n");
+        get_answers(ANSWER_FILE, formatted_question_id);
+        printf("\n");
+
+        char choice;
+        while (1) {
+        printf("Enter 'a' for ADD solution or 'f' for go to FORUM: ");
+        scanf(" %c", &choice);
+        getchar();
+
+        if (choice == 'a') {
+            add_answer(id);
+        } else if (choice == 'f') {
+            forum_screen();
+        } else {
+            printf("Invalid input!\n");
+        }
+    }
+
+        free(question);
+    }else {
+        printf("Question not found.\n");
+    }
+}
+
+/**
+ * @name: Add answer to a question
+*/
+void add_answer(int question_id){
+    printf("Question id: %d\n", question_id);
+
+    Answer ans;
+
+    int rows = count_rows(ANSWER_FILE);
+    ans.id = rows + 1;
+    printf("Answer ID: %d\n", ans.id);
+
+    printf("Enter the answer: ");
+    fgets(ans.answer, sizeof(ans.answer), stdin);
+    strtok(ans.answer, "\n");
+    printf("Answer: %s\n", ans.answer);
+
+    char* current_date = getCurrentDate();
+    strcpy(ans.date, current_date);
+    printf("Date: %s\n", ans.date);
+
+    strcpy(ans.username, logged_in_user.username);
+    printf("Username: %s\n", ans.username);
+
+    // Format the question_id as "question-x"
+    char formatted_question_id[20]; // Assuming maximum 20 characters for the formatted ID
+    sprintf(formatted_question_id, "question-%d", question_id);
+    printf("Formatted Question ID: %s\n", formatted_question_id);
+
+    char answer_string[99999];
+
+    sprintf(answer_string, "%d,%s,%s,%s,%s",
+        ans.id,
+        ans.answer,
+        ans.date,
+        ans.username,
+        formatted_question_id
+    );
+
+    bool isAddedAnswer = create(ANSWER_FILE, answer_string, strlen(answer_string));
+    if (isAddedAnswer) {
+        printf("Successfully added the answer!\n");
+        // wait 2 seconds and call view_question function
+        sleep(2);
+        view_question(question_id);
+    } else {
+        printf("Something went wrong!\n");
+        home_screen();
+    }
 }
 
 /**
  * @name: Write a problem Screen
 */
 void write_problem_screen() {
-    printf("Write down you problem on Forum!");
+    printf("Write down your problem on the forum!\n");
+    printf("Welcome, %s!\n", logged_in_user.username);
 
-    char title[500];
+    Question new_question;
+
+    int rows = count_rows(QUESTION_FILE);
+    new_question.id = rows + 1;
 
     printf("Enter question title: ");
     clear_input_buffer();
-    fgets(title, sizeof(title), stdin);
-    strtok(title, "\n");
+    fgets(new_question.title, sizeof(new_question.title), stdin);
+    strtok(new_question.title, "\n");
 
-    printf("%s", title);
-    
+    printf("Enter the description: ");
+    fgets(new_question.description, sizeof(new_question.description), stdin);
+    strtok(new_question.description, "\n");
+
+    char* current_date = getCurrentDate();
+    strcpy(new_question.date, current_date);
+
+    strcpy(new_question.username, logged_in_user.username);
+    new_question.user_id = logged_in_user.id;
+
+    char questionString[99999];
+
+    sprintf(questionString, "%d,%s,%s,%s,%s,%d",
+        new_question.id,
+        new_question.title,
+        new_question.description,
+        new_question.date,
+        new_question.username,
+        new_question.user_id
+    );
+
+    bool isCreatedQuestion = create(QUESTION_FILE, questionString, strlen(questionString));
+    if (isCreatedQuestion) {
+        char choice;
+        printf("Question has been added! Want to go to FORUM? (y/n)");
+        scanf("%c", &choice);
+        if (choice == 'y') {
+            forum_screen();
+        } else {
+            home_screen();
+        }
+    } else {
+        printf("Somethign wen't wrong!");
+        home_screen();
+    }
+
 }
+
 
 
 int main () {
