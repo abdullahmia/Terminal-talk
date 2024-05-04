@@ -10,9 +10,9 @@
 /**
  * Define the database file
 */
-const char *const USERS_FILE = "users.csv";
-const char *const QUESTION_FILE = "questions.csv";
-const char *const ANSWER_FILE = "answer.csv";
+const char *const USERS_FILE = "./database/users.csv";
+const char *const QUESTION_FILE = "./database/questions.csv";
+const char *const ANSWER_FILE = "./database/answer.csv";
 const int USER_ID = 1;
 const int USER_NAME_COLUMN = 2;
 const int USER_PASSWORD_COLUMN = 3;
@@ -28,7 +28,6 @@ const int ANSER_USERNAME = 2;
 const int ANSER_ANSWER = 3;
 const int ANSER_DATE = 4;
 const int ANSER_QUESTION_ID = 5;
-
 #define MAX_LINE_LENGTH 5500
 
 
@@ -250,6 +249,18 @@ char* getCurrentDate() {
 }
 
 
+void get_app_name() {
+    printf(" _______  _______  ______    __   __  ___   __    _  _______  ___        _______  _______  ___      ___   _ \n");
+    printf("|       ||       ||    _ |  |  |_|  ||   | |  |  | ||   _   ||   |      |       ||   _   ||   |    |   | | |\n");
+    printf("|_     _||    ___||   | ||  |       ||   | |   |_| ||  |_|  ||   |      |_     _||  |_|  ||   |    |   |_| |\n");
+    printf("  |   |  |   |___ |   |_||_ |       ||   | |       ||       ||   |        |   |  |       ||   |    |      _|\n");
+    printf("  |   |  |    ___||    __  ||       ||   | |  _    ||       ||   |___     |   |  |       ||   |___ |     |_ \n");
+    printf("  |   |  |   |___ |   |  | || ||_|| ||   | | | |   ||   _   ||       |    |   |  |   _   ||       ||    _  |\n");
+    printf("  |___|  |_______||___|  |_||_|   |_||___| |_|  |__||__| |__||_______|    |___|  |__| |__||_______||___| |_|\n");
+}
+
+
+
 /**
  * @name: Clear screen
 */
@@ -273,20 +284,19 @@ void bootstrap_screen() {
     do {
         clear_screen();
 
-        printf("Welcome to the Forum App!\n");
+        get_app_name();
         printf("----------------------------\n");
         printf("1. Login\n");
         printf("2. Create Account\n");
-        printf("3. Forgot Password\n");
-        printf("4. Help\n");
-        printf("5. Exit\n");
+        printf("3. Help\n");
+        printf("4. Exit\n");
         printf("----------------------------\n");
 
         printf("Choose an option to proceed: ");
         choice = get_user_choice();
 
-        if (choice < 1 || choice > 5) {
-            printf("Invalid choice. Please enter a number between 1 and 5.\n");
+        if (choice < 1 || choice > 4) {
+            printf("Invalid choice. Please enter a number between 1 and 4.\n");
         }
     } while (choice < 1 || choice > 5);
 
@@ -298,9 +308,44 @@ void bootstrap_screen() {
             register_screen();
             break;
         case 3:
-            forgot_password_screen();
+            help_screen();
             break;
-        //TODO: Add cases for 4 and 5 (Help and Exit)
+        case 4:
+            printf("Exiting the Terminal Talk. Goodbye!\n");
+            exit(0);
+            break;
+    }
+}
+
+/**
+ * @name: Help Screen
+*/
+void help_screen(int isAuthenticated) {
+    clear_screen();
+    get_app_name();
+    printf("----------------------------\n");
+    printf("Welcome to the Terminal Talk App Help section!\n");
+    printf("This app allows you to participate in discussions and interact with other users.\n");
+    printf("Here are some key features and how to use them:\n");
+    printf("1. Login: If you already have an account, select this option to log in.\n");
+    printf("2. Create Account: If you are new to the Terminal Talk App, select this option to create a new account.\n");
+    printf("3. Help: You're here! This option displays information on how to use the app.\n");
+    printf("4. Exit: Select this option to exit the Terminal Talk App.\n");
+    printf("----------------------------\n");
+    printf("Once logged in, you can:\n");
+    printf("- Create new posts to start discussions.\n");
+    printf("- Go to feed to see all the problems.\n");
+    printf("- Jump to the single problem.\n");
+    printf("- You can add a solution to a particular question\n");
+    printf("If you have any further questions or encounter any issues, feel free to contact our support team.\n");
+    printf("----------------------------\n");
+    printf("Press any key to return to the main menu...");
+    while (getchar() != '\n');
+    getchar();
+    if (isAuthenticated) {
+        home_screen();
+    } else {
+        bootstrap_screen();
     }
 }
 
@@ -311,7 +356,7 @@ int get_user_choice(void) {
     int choice;
 
     while (scanf("%d", &choice) != 1 || choice < 1 || choice > 5) {
-        printf("Invalid choice. Please enter a number between 1 and 5: ");
+        printf("Invalid choice. Please enter a number between 1 and 4: ");
         scanf("%*[^\n]");
     }
 
@@ -446,7 +491,7 @@ void home_screen() {
 
     do {
         clear_screen();
-        printf("Welcome to the Forum App!\n");
+        get_app_name();
         printf("----------------------------\n");
         printf("1. Go to Fourm\n");
         printf("2. Write a problem?\n");
@@ -457,10 +502,10 @@ void home_screen() {
         printf("Choose an option to proceed: ");
         choice = get_user_choice();
 
-        if (choice < 1 || choice > 5) {
-            printf("Invalid choice. Please enter a number between 1 and 5.\n");
+        if (choice < 1 || choice > 4) {
+            printf("Invalid choice. Please enter a number between 1 and 4.\n");
         }
-    } while (choice < 1 || choice > 5);
+    } while (choice < 1 || choice > 4);
 
     
     switch (choice) {
@@ -470,7 +515,13 @@ void home_screen() {
         case 2:
             write_problem_screen();
             break;
-        //TODO: Add cases for 4 and 5 (Help and Exit)
+        case 3:
+            help_screen(1);
+            break;
+        case 4:
+            printf("Exiting the Terminal Talk App. Goodbye!\n");
+            exit(0);
+            break;
     }
 }
 
@@ -562,13 +613,10 @@ void view_question(int id) {
  * @name: Add answer to a question
 */
 void add_answer(int question_id){
-    printf("Question id: %d\n", question_id);
-
     Answer ans;
 
     int rows = count_rows(ANSWER_FILE);
     ans.id = rows + 1;
-    printf("Answer ID: %d\n", ans.id);
 
     printf("Enter the answer: ");
     fgets(ans.answer, sizeof(ans.answer), stdin);
