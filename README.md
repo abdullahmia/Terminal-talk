@@ -25,8 +25,9 @@ ForumCLI is a command-line interface (CLI) application designed to facilitate di
 
 1. Clone the repository to your local machine:
 
-bash
-git clone https://github.com/abdullahmia/c-sdp-project.git
+```
+git clone https://github.com/abdullahmia/c-project-sdp
+```
 
 
 2. Navigate to the project directory:
