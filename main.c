@@ -430,7 +430,7 @@ void register_screen() {
     int rows = count_rows(USERS_FILE);
     newAccount.id = rows + 1;
 
-    printf("Enter username: "); // TODO: It should be validate that username is already exist or not.
+    printf("Enter username: "); // TODO: @mdrahib46 It should be validate that username is already exist or not.
     clear_input_buffer();
     fgets(newAccount.username, sizeof(newAccount.username), stdin);
     strtok(newAccount.username, "\n");
@@ -439,8 +439,8 @@ void register_screen() {
     fgets(newAccount.password, sizeof(newAccount.password), stdin);
     strtok(newAccount.password, "\n");
 
-    printf("Enter birth date(dd/mm/yyyy): "); // Todo: Validate the date formate
-    fgets(newAccount.birth_date, sizeof(newAccount.birth_date), stdin);
+    printf("Enter birth date(dd/mm/yyyy): "); // Todo: @abunaserkayes0 Validate the date formate
+    fgets(newAccount.birth_date, sizeof(newAccount.birt_date), stdin);
     strtok(newAccount.birth_date, "\n");
 
 
