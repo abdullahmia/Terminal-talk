@@ -1,6 +1,6 @@
 # Terminal Talk
 
-ForumCLI is a command-line interface (CLI) application designed to facilitate discussions and collaboration among users in a text-based environment. With ForumCLI, users can engage in various forum-related activities such as logging in, creating accounts, posting questions, providing answers, and more, all from the comfort of their terminal.
+Terminal Talk is a command-line interface (CLI) application designed to facilitate discussions and collaboration among users in a text-based environment. With Terminal Talk, users can engage in various forum-related activities such as logging in, creating accounts, posting questions, providing answers, and more, all from the comfort of their terminal.
 
 ## Preview of Terminal Talk
 <div style="display: flex; justify-content: space-between;">
