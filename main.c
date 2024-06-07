@@ -440,7 +440,7 @@ void register_screen() {
     strtok(newAccount.password, "\n");
 
     printf("Enter birth date(dd/mm/yyyy): "); // Todo: @abunaserkayes0 Validate the date formate
-    fgets(newAccount.birth_date, sizeof(newAccount.birt_date), stdin);
+    fgets(newAccount.birth_date, sizeof(newAccount.birth_date), stdin);
     strtok(newAccount.birth_date, "\n");
 
 
@@ -482,6 +482,24 @@ void forgot_password_screen() {
 
 }
 
+
+/**
+ * @name Search Problem
+ */
+void search_post() {
+    clear_screen();
+    get_app_name();
+    printf("----------------------------\n");
+    printf("Search a problem (Comming soon!)\n");
+    printf("----------------------------\n");
+    printf("Press any key to return to the main menu...");
+    while (getchar() != '\n');
+    getchar();
+    home_screen();
+
+}
+
+
 /**
  * @name: Home Screen
 */
@@ -495,15 +513,17 @@ void home_screen() {
         printf("----------------------------\n");
         printf("1. Go to Fourm\n");
         printf("2. Write a problem?\n");
-        printf("3. Help\n");
-        printf("4. Exit\n");
+        printf("3. Search a problem?\n");
+        printf("4. Help\n");
+        printf("5. Exit\n");
         printf("----------------------------\n");
 
         printf("Choose an option to proceed: ");
         choice = get_user_choice();
+        printf("%d", choice);
 
         if (choice < 1 || choice > 4) {
-            printf("Invalid choice. Please enter a number between 1 and 4.\n");
+            printf("Invalid choice. Please enter a number between 1 and 5.\n");
         }
     } while (choice < 1 || choice > 4);
 
@@ -516,9 +536,12 @@ void home_screen() {
             write_problem_screen();
             break;
         case 3:
-            help_screen(1);
+            search_post();
             break;
         case 4:
+            help_screen(1);
+            break;
+        case 5:
             printf("Exiting the Terminal Talk App. Goodbye!\n");
             exit(0);
             break;
@@ -621,19 +644,19 @@ void add_answer(int question_id){
     printf("Enter the answer: ");
     fgets(ans.answer, sizeof(ans.answer), stdin);
     strtok(ans.answer, "\n");
-    printf("Answer: %s\n", ans.answer);
+    // printf("Answer: %s\n", ans.answer);
 
     char* current_date = getCurrentDate();
     strcpy(ans.date, current_date);
-    printf("Date: %s\n", ans.date);
+    // printf("Date: %s\n", ans.date);
 
     strcpy(ans.username, logged_in_user.username);
-    printf("Username: %s\n", ans.username);
+    // printf("Username: %s\n", ans.username);
 
     // Format the question_id as "question-x"
     char formatted_question_id[20]; // Assuming maximum 20 characters for the formatted ID
     sprintf(formatted_question_id, "question-%d", question_id);
-    printf("Formatted Question ID: %s\n", formatted_question_id);
+    // printf("Formatted Question ID: %s\n", formatted_question_id);
 
     char answer_string[99999];
 
@@ -662,7 +685,6 @@ void add_answer(int question_id){
 */
 void write_problem_screen() {
     printf("Write down your problem on the forum!\n");
-    printf("Welcome, %s!\n", logged_in_user.username);
 
     Question new_question;
 
